@@ -1,6 +1,7 @@
 import { JsonName } from './JsonName';
 import { serialize } from './../serialize';
 import { deserialize } from './../deserialize';
+import { TSerializeConfig } from 'core/types';
 
 /**
  * Декоратор для сериализации-десериализации массивов экземпляров.
@@ -10,27 +11,27 @@ import { deserialize } from './../deserialize';
  * @constructor
  */
 export function JsonArray(proto: any, name?: string): (target: object, propertyKey: string) => void {
-    const serializer = (value): any => {
-        if (!value || !(value instanceof Array)) {
-            return null;
+  const serializer = (value, config: TSerializeConfig): any => {
+    if (!value || !(value instanceof Array)) {
+      return null;
+    }
+    return value.map(
+      item => {
+        if (item instanceof proto) {
+          return item.toServer ? item.toServer(config) : serialize(item, config);
         }
-        return value.map(
-            item => {
-                if (item instanceof proto) {
-                    return item.toServer ? item.toServer() : serialize(item);
-                }
-            }
-        ).filter(i => !!i);
-    };
+      }
+    ).filter(i => !!i);
+  };
 
-    const deserializer = (value): any => {
-        if (!value || !(value instanceof Array)) {
-            return null;
-        }
-        return value.map(
-            item => proto.fromServer ? proto.fromServer(item) : deserialize(item, proto)
-        );
-    };
+  const deserializer = (value): any => {
+    if (!value || !(value instanceof Array)) {
+      return null;
+    }
+    return value.map(
+      item => proto.fromServer ? proto.fromServer(item) : deserialize(item, proto)
+    );
+  };
 
-    return JsonName.call(null, name, serializer, deserializer);
+  return JsonName.call(null, name, serializer, deserializer);
 }
