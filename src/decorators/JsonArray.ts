@@ -11,14 +11,21 @@ import { TSerializeConfig } from 'core/types';
  * @constructor
  */
 export function JsonArray(proto: any, name?: string): (target: object, propertyKey: string) => void {
-  const serializer = (value, config: TSerializeConfig): any => {
+  const serializer = (value: any, instance: any, config?: TSerializeConfig): any => {
     if (!value || !(value instanceof Array)) {
       return null;
     }
     return value.map(
       item => {
-        if (item instanceof proto) {
-          return item.toServer ? item.toServer(config) : serialize(item, config);
+        let model = item;
+        if (item && !(item instanceof proto) && config && config.autoCreateModelForRawData && typeof item === 'object') {
+          const itemInstance = new proto();
+          Object.assign(itemInstance, item);
+          model = itemInstance;
+        }
+
+        if (model instanceof proto) {
+          return model.toServer ? model.toServer(config) : serialize(model, config);
         }
       }
     ).filter(i => !!i);

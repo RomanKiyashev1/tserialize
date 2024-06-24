@@ -7,8 +7,12 @@ function serializeValue(metadata: PropertyMetadata, value: any, instance: any, c
   }
 
   if (metadata.isStruct) {
-    const serializer = value ? value.toServer : null;
-    return serializer ? serializer.call(value, config) : (value ? serialize(value, config) : null);
+    const serializer = metadata.serialize;
+    if (serializer) {
+      return serializer(value, instance, config)
+    }
+
+    return value ? serialize(value, config) : null;
   } else {
     const serializer = metadata.serialize;
     return serializer ? serializer(value, instance, config) : value;
@@ -33,7 +37,7 @@ function assignSerializedValueToResult(metadata: PropertyMetadata, serializedVal
  * @param model - экземпляр класса, который надо превратить в данные для отправки серверу по JSONRPC
  * @returns {{}} - обычный объект JS
  */
-export function serialize(model: { [key: string]: any }, config: TSerializeConfig = { allowNullValues: false }): object {
+export function serialize(model: { [key: string]: any }, config: TSerializeConfig = { allowNullValues: false, autoCreateModelForRawData: false }): object {
   const result = {};
   const targetClass = Object.getPrototypeOf(model);
 
