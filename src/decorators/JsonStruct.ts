@@ -4,13 +4,13 @@ import { deserialize } from './../deserialize';
 import { serialize } from './../serialize';
 
 /**
-* Декоратор для сериализаци-дерериализации аггрегированных моделей.
-* Для сериализации использует toServer метод экземпляра.Если его нет - просто serialize.
-* Для десериализации использует статический метод fromServer. Если его нет - просто deserialize.
-* @param TargetClass - конструктор аггрегированной модели
-* @param {string} rawName - кастомное имя поля в сырых данных
-* @returns {(target: object, propertyKey: string) => void} - декоратор
-* @constructor
+ * Декоратор для сериализаци-дерериализации аггрегированных моделей.
+ * Для сериализации использует toServer метод экземпляра.Если его нет - просто serialize.
+ * Для десериализации использует статический метод fromServer. Если его нет - просто deserialize.
+ * @param TargetClass - конструктор аггрегированной модели
+ * @param {string} rawName - кастомное имя поля в сырых данных
+ * @returns {(target: object, propertyKey: string) => void} - декоратор
+ * @constructor
 */
 export function JsonStruct(TargetClass: any, rawName?: string): (target: object, propertyKey: string) => void {
     return (target: object, propertyKey: string): void => {
