@@ -11,34 +11,34 @@ import { TSerializeConfig } from 'core/types';
  * @constructor
  */
 export function JsonArray(proto: any, name?: string): (target: object, propertyKey: string) => void {
-  const serializer = (value: any, instance: any, config?: TSerializeConfig): any => {
-    if (!value || !(value instanceof Array)) {
-      return null;
-    }
-    return value.map(
-      item => {
-        let model = item;
-        if (item && !(item instanceof proto) && config && config.autoCreateModelForRawData && typeof item === 'object') {
-          const itemInstance = new proto();
-          Object.assign(itemInstance, item);
-          model = itemInstance;
+    const serializer = (value: any, instance: any, config?: TSerializeConfig): any => {
+        if (!value || !(value instanceof Array)) {
+            return null;
         }
+        return value.map(
+            item => {
+                let model = item;
+                if (item && !(item instanceof proto) && config && config.autoCreateModelForRawData && typeof item === 'object') {
+                    const itemInstance = new proto();
+                    Object.assign(itemInstance, item);
+                    model = itemInstance;
+                }
 
-        if (model instanceof proto) {
-          return model.toServer ? model.toServer(config) : serialize(model, config);
+                if (model instanceof proto) {
+                    return model.toServer ? model.toServer(config) : serialize(model, config);
+                }
+            }
+        ).filter(i => !!i);
+    };
+
+    const deserializer = (value): any => {
+        if (!value || !(value instanceof Array)) {
+            return null;
         }
-      }
-    ).filter(i => !!i);
-  };
+        return value.map(
+            item => proto.fromServer ? proto.fromServer(item) : deserialize(item, proto)
+        );
+    };
 
-  const deserializer = (value): any => {
-    if (!value || !(value instanceof Array)) {
-      return null;
-    }
-    return value.map(
-      item => proto.fromServer ? proto.fromServer(item) : deserialize(item, proto)
-    );
-  };
-
-  return JsonName.call(null, name, serializer, deserializer);
+    return JsonName.call(null, name, serializer, deserializer);
 }
